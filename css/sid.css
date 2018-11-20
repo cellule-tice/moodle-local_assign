@@ -1,0 +1,22 @@
+.notsubmitted {
+    background-color: #ff4136;
+}
+.submitted {
+    background-color: #55ab26;
+}
+.latesubmitted {
+    background-color: #ff8800;
+}
+
+.seminar {
+    border : solid #DDDEBC 1px;
+    text-align:center;
+    vertical-align:middle;
+    padding : 5px;
+    border-spacing: 50px;
+}
+
+.sidtable th.header.c7,
+.sidtable th.header.c8 {
+    text-align: center;
+}

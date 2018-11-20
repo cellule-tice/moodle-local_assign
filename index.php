@@ -1,0 +1,185 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/lib.php');
+require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/mod/assign/locallib.php');
+
+
+require_login();
+// Check if plugin is enabled.
+if (get_config('local_assign', 'disableplugin')) {
+    print_error('disable_sid_plugin', 'local_assign');
+}
+
+$id = optional_param('id', 0, PARAM_INT); // This is de course id.
+
+$course = $DB->get_record('course', array('id' => $id), '*', MUST_EXIST);
+
+$pageparams = array('id' => $id);
+
+// The tool is only available after login in course since it is only available to teachers.
+require_login($course);
+
+$context = context_course::instance($course->id, MUST_EXIST);
+$PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
+$pagename = get_string('pluginname', 'local_assign');
+$PAGE->set_url(new moodle_url('/local/sid/', $pageparams));
+$PAGE->set_context($context);
+$PAGE->set_pagelayout('course');
+$PAGE->set_heading($course->fullname);
+$PAGE->requires->css('/local/sid/css/sid.css');
+
+// The tool is only available after login in course since it is only available to teachers.
+require_capability('moodle/course:manageactivities', $context);
+
+// Get all assigns list for this course.
+$seminarlist = get_seminar_list($id);
+
+// Get Student User List.
+
+$userlist = get_student_list_for_course($id);
+
+$cmd = optional_param('cmd', '', PARAM_ALPHANUM);
+$format = optional_param('format', '', PARAM_ALPHANUM);
+if ($cmd == 'downloadzip') {
+    $userid = optional_param('userid', 0, PARAM_INT);
+    $format = ($format == 'text') ? $format : '';
+    get_docs_for_student ( $userid , $seminarlist, $format );
+} else if ($cmd == 'downloadallzip') {
+    set_time_limit(0);
+    get_docs_for_all_students ( $userlist , $seminarlist, $format );
+}
+
+// Output.
+$out = '';
+print $OUTPUT->header();
+echo $OUTPUT->box_start();
+$downloadall = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadallzip', $OUTPUT->pix_icon('t/download', ''));
+print $OUTPUT->heading(get_string( 'SID', 'local_assign' ) . $downloadall);
+
+// Display table header.
+
+$out .= get_string('seminarlist', 'local_assign');
+$items = array();
+$i = 0;
+foreach ($seminarlist as $key => $seminar) {
+    $i++;
+    $items[] = 'S&eacute;m. ' . $i . ' : '.   $seminar['name'];
+}
+$out .= html_writer:: alist($items);
+
+$table = new html_table();
+$table->attributes['class'] = 'sidtable generaltable';
+$headers = array('N ', get_string('lastname'), get_string('firstname'), get_string( 'section' ));
+$i = 0;
+$nbsubmissions = array();
+foreach ($seminarlist as $key => $seminar) {
+    $i++;
+    $headers[] = 'S&eacute;m. ' . $i;
+    $nbsubmissions[$key] = 0;
+}
+$headers[] = get_string('download') . ' compil';
+$headers[] = get_string('download') . ' zip';
+$table->head = $headers;
+
+// Display users.
+
+$i = 0;
+
+foreach ($userlist as $currentuser) {
+    $i++;
+    $row = new html_table_row();
+    $row->cells[] = $i;
+
+    $row->cells[] = htmlspecialchars($currentuser['lastname']);
+
+    $row->cells[] = htmlspecialchars($currentuser['firstname']);
+
+    // Get the progcodes of the user. Must still exist ?
+    $progcodes = get_prog_code_for_user($currentuser['id']);
+    if (empty($progcodes)) {
+        $row->cells[] = '-';
+    } else {
+        if (is_array($progcodes)) {
+            $row->cells[] = implode('<br/>', $progcodes);
+        } else {
+            $row->cells[] = '-';
+        }
+    }
+
+    // Get semainarsubmissions for a given user.
+    $seminarinfoforuser = get_seminar_info_for_user($currentuser['id'], $seminarlist);
+
+    foreach ($seminarlist as $seminarid => $seminar) {
+        // Foreach assign dispaly in color if the submission was done int ime (green), later (orange), not done (red).
+        $color = '';
+        if (!array_key_exists($seminarid, $seminarinfoforuser)) {
+            $color = 'red';
+             $statusseminar = 'notsubmitted';
+        } else if ($seminarinfoforuser[$seminarid][0]['timecreated'] <= $seminar['duedate']) {
+            $color = 'green';
+            $statusseminar = 'submitted';
+            $nbsubmissions[$seminarid]++;
+        } else {
+            $color = 'coral';
+            $statusseminar = 'latesubmitted';
+            $nbsubmissions[$seminarid]++;
+        }
+        $cell = new html_table_cell();
+        $cell->text = '&nbsp;';
+        $cell->attributes = array('class' => 'seminar ' . $statusseminar);
+
+        $row->cells[] = $cell;
+    }
+
+    // Give links for download.
+    $cell = new html_table_cell();
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id. '&cmd=downloadzip&userid='.$currentuser['id'].'&format=text',
+            $OUTPUT->pix_icon('t/download', ''));
+    $cell->attributes = array('class' => 'text-sm-center');
+    $row->cells[] = $cell;
+
+    $cell = new html_table_cell();
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadzip&userid='.$currentuser['id'],
+            $OUTPUT->pix_icon('t/download', ''));
+    $cell->attributes = array('class' => 'text-sm-center');
+    $row->cells[] = $cell;
+
+    $table->data[] = $row;
+} // END - foreach users
+
+// Display table footer.
+
+$row = new html_table_row();
+$cell = new html_table_cell ();
+$cell->colspan = 4;
+$cell->text = get_string('nb_assignments', 'local_assign');
+$row->cells[] = $cell;
+foreach ($nbsubmissions as $nb) {
+    $row->cells[] = $nb;
+}
+$row->cells[] = '&nbsp;';
+
+$table->data[] = $row;
+
+echo $out;
+echo html_writer::table($table);
+
+echo $OUTPUT->box_end();
+
+print $OUTPUT->footer();
