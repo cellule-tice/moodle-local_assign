@@ -13,7 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-copyright 2016 - Cellule TICE - Université de Namur
+copyright 2018 - Cellule TICE - Université de Namur
 license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
 

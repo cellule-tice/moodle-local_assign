@@ -21,7 +21,7 @@
  * lib.php/modulename_install() post installation hook and partially defaults.php.
  *
  * @package    local_assign
- * @copyright  2016 Laurence Dumortier
+ * @copyright  2018 Laurence Dumortier
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the sid module
+ * Capability definitions for the local_assign module
  *
  * The capabilities are loaded into the database table when the module is
  * installed or updated. Whenever the capability definitions are updated,
@@ -39,8 +39,8 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    mod_sid
- * @copyright  2015 Your Name
+ * @package    local_assign
+ * @copyright  2018 Laurence Dumortier Universite dde namur
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
