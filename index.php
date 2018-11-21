@@ -42,7 +42,7 @@ $PAGE->set_url(new moodle_url('/local/sid/', $pageparams));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 $PAGE->set_heading($course->fullname);
-$PAGE->requires->css('/local/sid/css/sid.css');
+$PAGE->requires->css('/local/assign/css/assign.css');
 
 // The tool is only available after login in course since it is only available to teachers.
 require_capability('moodle/course:manageactivities', $context);

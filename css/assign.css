@@ -5,14 +5,14 @@
     background-color: #55ab26;
 }
 .latesubmitted {
-    background-color: #ff8800;
+    background-color: #f80;
 }
 
 .seminar {
-    border : solid #DDDEBC 1px;
-    text-align:center;
+    border: solid #dddebc 1px;
+    text-align: center;
     vertical-align:middle;
-    padding : 5px;
+    padding: 5px;
     border-spacing: 50px;
 }
 

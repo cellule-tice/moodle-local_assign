@@ -133,7 +133,7 @@ function get_seminar_list( $courseid ) {
 function get_seminar_info_for_user ( $userid, $seminarlist ) {
     global $DB;
     $seminarinfoforuser = array();
-    foreach (array_keys($seminarlist) as $seminarid ) {
+    foreach (array_keys($seminarlist) as $seminarid) {
         // Foreach assign of the list get the infos concerning submisisons for the given user.
         $list = $DB->get_records('assign_submission', array('userid' => $userid,
             'assignment' => $seminarid, 'status' => 'submitted'));
@@ -193,7 +193,7 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
      /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
      *  et dans ce dossier toutes les soumissions
      */
-   
+
     foreach ($userlist as $user) {
         $userid = $user['id'];
         // Get the identity of the user according to its id.
@@ -208,7 +208,7 @@ function send_content_for_user($userid, $course, $seminarlist, $format = '', $mu
         // The filename is based on the lastname and firstname of the user.
         $filename = clean_filename($course->shortname) . '_' . clean_filename($student->lastname . '_' .$student->firstname);
     } else {
-        // $filename is the shortname of the cours
+        // $filename is the shortname of the course.
          $filename = clean_filename($course->shortname);
     }
 
