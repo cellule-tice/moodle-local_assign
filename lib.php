@@ -215,17 +215,17 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
     foreach ($userlist as $user) {
         $userid = $user['id'];
         // Get the identity of the user according to its id.
-        list($filename, $filesforzipping, $text) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format, true);
+        list($filename, $filesforzipping) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format, true);
     }
     // Send the zip file to download.
-    
+
     if (count($filesforzipping) != 0) {
         $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
         // Zip files.
         $zipper = new zip_packer();
         if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
             // Send the zip file to download.
-           send_temp_file($tempzip, $filename);
+            send_temp_file($tempzip, $filename);
         }
     }
 }
