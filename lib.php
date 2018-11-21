@@ -79,11 +79,11 @@ function tool_is_used_in_course($modulename, $courseid) {
  * This function adds the course navigation menu to add a link to this tool.
  */
 function local_assign_extend_navigation_course(navigation_node $parentnode, stdClass $course , context_course $context  ) {
-     global $PAGE, $CFG;
+     global $CFG;
      // Show only if assign tool is activated.
     if (assign_is_used_in_course($course->id)  && has_capability('moodle/course:manageactivities', $context)) {
         $link = new moodle_url($CFG->wwwroot .'/local/sid/index.php', array('id' => $course->id));
-        $node = $parentnode->add(get_string('SID', 'local_assign'), $link, navigation_node::TYPE_SETTING);
+        $parentnode->add(get_string('SID', 'local_assign'), $link, navigation_node::TYPE_SETTING);
     }
 }
 
@@ -154,11 +154,6 @@ function get_seminar_info_for_user ( $userid, $seminarlist ) {
  * @return output : string
  */
 function clean_html ($content) {
-    $oldpatterns = array( '/(<p>)/',
-                          '/(<span>)/',
-              '/<\/p>/', '/<\/span>/' );
-    $newpatterns = array( "\n\r",
-                          '', );
     $output = strip_tags($content);
     return $output;
 }
@@ -173,16 +168,56 @@ function clean_html ($content) {
 function get_docs_for_student ( $userid , $seminarlist, $format='') {
     global $CFG, $course;
 
-    $text = '';
-    // Get the identity of the user according to its id.
-    $student = get_user_identity( $userid );
-    // The filename is based on the lastname and firstname of the user.
-    $filename = clean_filename($course->shortname) . '_' . clean_filename($student->lastname . '_' .$student->firstname);
-    // If format is not given, the extension is zip, otherwise it is txt.
+    send_content_for_user($userid, $course, $seminarlist);
+}
+
+/*
+ * Get the online content for a submission
+ * @param submissionid : int
+ * @return string
+ */
+function get_onlinetext_for_submission ($submissionid) {
+    global $DB;
+    $list = $DB->get_record_select('assignsubmission_onlinetext', "submission='$submissionid'", null, 'onlinetext');
+    if (!empty($list)) {
+        foreach ($list as $value) {
+            return $value;
+        }
+    }
+    return '';
+}
+
+/*
+ * This function gets all documents for a given user and courselist in a specific format
+ */
+function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
+     global $CFG, $course;
+     /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
+     *  et dans ce dossier toutes les soumissions
+     */
+   
+    foreach ($userlist as $user) {
+        $userid = $user['id'];
+        // Get the identity of the user according to its id.
+        send_content_for_user($userid, $course, $seminarlist, true);
+    }
+}
+
+function send_content_for_user($userid, $course, $seminarlist, $multi = false) {
+    $student = get_user_identity($userid);
+    if (!$multi) {
+        // The filename is based on the lastname and firstname of the user.
+        $filename = clean_filename($course->shortname) . '_' . clean_filename($student->lastname . '_' .$student->firstname);
+    } else {
+        // $filename is the shortname of the cours
+         $filename = clean_filename($course->shortname);
+    }
+
     ($format == '') ? $filename .= '.zip' : $filename .= '.txt';
 
     $i = 0;
-    foreach ($seminarlist as $key => $seminar) {
+    $text = '';
+    foreach ($seminarlist as $seminar) {
         $i++;
         // Foreach seminarlist get courseinfo and instance info of this assign.
         list ($course, $cm) = get_course_and_cm_from_cmid($seminar['cmid'], 'assign');
@@ -252,7 +287,6 @@ function get_docs_for_student ( $userid , $seminarlist, $format='') {
     }
     if ($format == '') {
         // If format is zip, from the collected fields generate the zip archive.
-        $result = '';
         if (count($filesforzipping) != 0) {
             $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
             // Zip files.
@@ -262,137 +296,6 @@ function get_docs_for_student ( $userid , $seminarlist, $format='') {
                 send_temp_file($tempzip, $filename);
             }
         }
-    } else {
-        // If format is txt, send the onlinetext collected in a filename.
-        send_content_in_file ($text, $filename);
-    }
-}
-
-/*
- * Get the online content for a submission
- * @param submissionid : int
- * @return string
- */
-function get_onlinetext_for_submission ($submissionid) {
-    global $DB;
-    $list = $DB->get_record_select('assignsubmission_onlinetext', "submission='$submissionid'", null, 'onlinetext');
-    if (!empty($list)) {
-        foreach ($list as $value) {
-            return $value;
-        }
-    }
-    return '';
-}
-
-/*
- * This function gets all documents for a given user and courselist in a specific format
- */
-function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
-     global $CFG, $course;
-     /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
-     *  et dans ce dossier toutes les soumissions
-     */
-
-    $text = '';
-    $filename = clean_filename($course->shortname);
-    foreach ($userlist as $user) {
-        $userid = $user['id'];
-        // Get the identity of the user according to its id.
-        $student = get_user_identity($userid);
-        // The filename is based on the lastname and firstname of the user.
-        // If format is not given, the extension is zip, otherwise it is txt.
-        ($format == '') ? $filename .= '.zip' : $filename .= '.txt';
-
-        $i = 0;
-        foreach ($seminarlist as $key => $seminar) {
-            $i++;
-            // Foreach seminarlist get courseinfo and instance info of this assign.
-            list ($course, $cm) = get_course_and_cm_from_cmid($seminar['cmid'], 'assign');
-            // Get the context instance of this instance.
-            $context = context_module::instance($cm->id);
-            // Construct the assign.
-            $assign = new assign($context, $cm, $course);
-
-            $groupname = '';
-            if ($assign->get_instance()->teamsubmission) {
-                $submission = $assign->get_group_submission($userid, 0, false);
-                $submissiongroup = $assign->get_submission_group($userid);
-                if ($submissiongroup) {
-                    $groupname = $submissiongroup->name . '-';
-                } else {
-                    $groupname = get_string('defaultteam', 'assign') . '-';
-                }
-            } else {
-                // Submission is individual, no group.
-                $submission = $assign->get_user_submission($userid, false);
-            }
-
-            if ($assign->is_blind_marking()) {
-                $prefix = str_replace('_', ' ', $groupname . get_string('participant', 'assign'));
-                $prefix = clean_filename($prefix . '_' . $assign->get_uniqueid_for_user($userid) . '_');
-            } else {
-                $prefix = str_replace('_', ' ', $groupname . $student->lastname);
-                $prefix = clean_filename($prefix . '_' . $assign->get_uniqueid_for_user($userid) . '_');
-            }
-            if ($submission) {
-                // If there is a submission, contruct the return according to the format (zip/txt).
-                if ($format == '') {
-                    // If format is zip, then get all the files related to the submissions of this user.
-                    foreach ($assign->get_submission_plugins() as $plugin) {
-                        if ($plugin->is_enabled() && $plugin->is_visible()) {
-                            $pluginfiles = $plugin->get_files($submission, $student);
-                            foreach ($pluginfiles as $zipfilename => $file) {
-                                $subtype = $plugin->get_subtype();
-                                $type = $plugin->get_type();
-                                $prefixedfilename = clean_filename($prefix .
-                                                                   $subtype .
-                                                                   '_' .
-                                                                   $type .
-                                                                   '_' .
-                                                                   $zipfilename);
-                                $filesforzipping[$prefixedfilename] = $file;
-                            }
-                        }
-                    }
-                } else {
-                    // If format is text, get all the onlinetext for the submissions of this user.
-                    $mydate = $seminar['fromdate'];
-                    if ( !$mydate ) {
-                        $mydate = $seminar['duedate'];
-                    }
-                    $text .= 'Seminaire '. $i . ' : '. $seminar['name'] . ' du '. utf8_decode(userdate($mydate))
-                            . "\n \n";
-                    $content = get_onlinetext_for_submission ($submission->id);
-                    if ($content != '') {
-                        $text .= clean_html($content) . "\n\n";
-                    } else {
-                        $text .= ':  Pas de descriptif ' . "\r\n" . "\r\n";
-                    }
-                    $text .= '-----------------------------------------------------' . "\n";
-                }
-            }
-        }
-        // All submissions were collected for this student.
-        if ($format == '') {
-            // If format is zip, from the collected fields generate the zip archive.
-            $result = '';
-            if (count($filesforzipping) != 0) {
-                $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
-                // Zip files.
-                $zipper = new zip_packer();
-                if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
-                    // Send the zip file to download.
-                    send_temp_file($tempzip, $filename);
-                }
-            }
-        } else {
-            // If format is txt, send the onlinetext collected in a filename.
-            send_content_in_file ($text, $filename);
-        }
-    }
-    if ($format == '') {
-         // Send the zip file to download.
-         send_temp_file($tempzip, $filename);
     } else {
         // If format is txt, send the onlinetext collected in a filename.
         send_content_in_file ($text, $filename);
