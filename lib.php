@@ -182,7 +182,7 @@ function get_docs_for_student ( $userid , $seminarlist, $format) {
     } else {
         // If format is txt, send the onlinetext collected in a filename.
         send_content_in_file ($text, $filename);
-    } 
+    }
     return true;
 }
 
@@ -231,13 +231,12 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
 }
 
 function send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format = '', $multi = false) {
-    global $CFG;
     $student = get_user_identity($userid);
     if (!$multi) {
         // The filename is based on the lastname and firstname of the user.
         $filename = clean_filename($course->shortname) . '_' . clean_filename($student->lastname . '_' .$student->firstname);
     } else {
-        // $filename is the shortname of the course.
+        // Filename is the shortname of the course.
          $filename = clean_filename($course->shortname);
     }
 
@@ -312,7 +311,7 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
                 $text .= '-----------------------------------------------------' . "\n";
             }
         }
-    }    
+    }
     return array($filename, $filesforzipping, $text);
 }
 
