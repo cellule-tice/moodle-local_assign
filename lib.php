@@ -132,9 +132,8 @@ function get_seminar_list( $courseid ) {
  */
 function get_seminar_info_for_user ( $userid, $seminarlist ) {
     global $DB;
-
     $seminarinfoforuser = array();
-    foreach ($seminarlist as $seminarid => $seminar) {
+    foreach (array_keys($seminarlist) as $seminarid ) {
         // Foreach assign of the list get the infos concerning submisisons for the given user.
         $list = $DB->get_records('assign_submission', array('userid' => $userid,
             'assignment' => $seminarid, 'status' => 'submitted'));
@@ -165,9 +164,8 @@ function clean_html ($content) {
  * @param format : string
  * @return a fiel is proposed to download
  */
-function get_docs_for_student ( $userid , $seminarlist, $format='') {
-    global $CFG, $course;
-
+function get_docs_for_student ( $userid , $seminarlist) {
+    global $course;
     send_content_for_user($userid, $course, $seminarlist);
 }
 
@@ -191,7 +189,7 @@ function get_onlinetext_for_submission ($submissionid) {
  * This function gets all documents for a given user and courselist in a specific format
  */
 function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
-     global $CFG, $course;
+     global $course;
      /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
      *  et dans ce dossier toutes les soumissions
      */
@@ -199,11 +197,12 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
     foreach ($userlist as $user) {
         $userid = $user['id'];
         // Get the identity of the user according to its id.
-        send_content_for_user($userid, $course, $seminarlist, true);
+        send_content_for_user($userid, $course, $seminarlist, $format, true);
     }
 }
 
-function send_content_for_user($userid, $course, $seminarlist, $multi = false) {
+function send_content_for_user($userid, $course, $seminarlist, $format = '', $multi = false) {
+    global $CFG;
     $student = get_user_identity($userid);
     if (!$multi) {
         // The filename is based on the lastname and firstname of the user.
