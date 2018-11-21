@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // Add instance is only aivalable to editingteacher and manager.
 $capabilities = array(
-    'local/sid:addinstance' => array(
+    'local/assign:addinstance' => array(
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -60,7 +60,7 @@ $capabilities = array(
     ),
 
     // View is only available to teacher, editingteacher and manager.
-    'local/sid:view' => array(
+    'local/assign:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(

@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $string['pluginname'] = 'Assign add-ons';
-$string['sid:addinstance'] = 'Add instance of assign add-ons plugin';
-$string['sid:view'] = 'Manage assign add-ons';
-$string['SID'] = 'Assigns status';
+$string['assign:addinstance'] = 'Add instance of assign add-ons plugin';
+$string['assign:view'] = 'Manage assign add-ons';
+$string['assigns'] = 'Assigns status';
 $string['seminarlist'] = 'Assign list';
 $string['nb_assignments'] = 'Nb of completed assignments';

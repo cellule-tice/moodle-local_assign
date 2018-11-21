@@ -17,6 +17,6 @@
 
 $string['pluginname'] = 'Add-ons pour les devoirs';
 $string['modulenameplural'] = 'Add-ons pour les devoirs';
-$string['SID'] = 'Remise des devoirs';
+$string['assigns'] = 'Remise des devoirs';
 $string['seminarlist'] = 'Liste des devoirs';
 $string['nb_assignments'] = 'Nb de devoirs remis :';

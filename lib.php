@@ -82,8 +82,8 @@ function local_assign_extend_navigation_course(navigation_node $parentnode, stdC
      global $CFG;
      // Show only if assign tool is activated.
     if (assign_is_used_in_course($course->id)  && has_capability('moodle/course:manageactivities', $context)) {
-        $link = new moodle_url($CFG->wwwroot .'/local/sid/index.php', array('id' => $course->id));
-        $parentnode->add(get_string('SID', 'local_assign'), $link, navigation_node::TYPE_SETTING);
+        $link = new moodle_url($CFG->wwwroot .'/local/assign/index.php', array('id' => $course->id));
+        $parentnode->add(get_string('assigns', 'local_assign'), $link, navigation_node::TYPE_SETTING);
     }
 }
 
@@ -164,9 +164,26 @@ function clean_html ($content) {
  * @param format : string
  * @return a fiel is proposed to download
  */
-function get_docs_for_student ( $userid , $seminarlist) {
-    global $course;
-    send_content_for_user($userid, $course, $seminarlist);
+function get_docs_for_student ( $userid , $seminarlist, $format) {
+    global $course, $CFG;
+    $filesforzipping = array();
+    list($filename, $filesforzipping, $text) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format);
+    if ($format != 'text') {
+        // If format is zip, from the collected fields generate the zip archive.
+        if (count($filesforzipping) != 0) {
+            $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
+            // Zip files.
+            $zipper = new zip_packer();
+            if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
+                // Send the zip file to download.
+                send_temp_file($tempzip, $filename);
+            }
+        }
+    } else {
+        // If format is txt, send the onlinetext collected in a filename.
+        send_content_in_file ($text, $filename);
+    } 
+    return true;
 }
 
 /*
@@ -188,20 +205,32 @@ function get_onlinetext_for_submission ($submissionid) {
 /*
  * This function gets all documents for a given user and courselist in a specific format
  */
-function get_docs_for_all_students ( $userlist , $seminarlist, $format ) {
-     global $course;
+function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
+     global $course, $CFG;
      /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
      *  et dans ce dossier toutes les soumissions
      */
 
+    $filesforzipping = array();
     foreach ($userlist as $user) {
         $userid = $user['id'];
         // Get the identity of the user according to its id.
-        send_content_for_user($userid, $course, $seminarlist, $format, true);
+        list($filename, $filesforzipping, $text) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format, true);
+    }
+    // Send the zip file to download.
+    
+    if (count($filesforzipping) != 0) {
+        $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
+        // Zip files.
+        $zipper = new zip_packer();
+        if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
+            // Send the zip file to download.
+           send_temp_file($tempzip, $filename);
+        }
     }
 }
 
-function send_content_for_user($userid, $course, $seminarlist, $format = '', $multi = false) {
+function send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format = '', $multi = false) {
     global $CFG;
     $student = get_user_identity($userid);
     if (!$multi) {
@@ -283,20 +312,18 @@ function send_content_for_user($userid, $course, $seminarlist, $format = '', $mu
                 $text .= '-----------------------------------------------------' . "\n";
             }
         }
-    }
-    if ($format == '') {
-        // If format is zip, from the collected fields generate the zip archive.
-        if (count($filesforzipping) != 0) {
-            $tempzip = tempnam($CFG->tempdir . '/', 'assignment_');
-            // Zip files.
-            $zipper = new zip_packer();
-            if ($zipper->archive_to_pathname($filesforzipping, $tempzip)) {
-                // Send the zip file to download.
-                send_temp_file($tempzip, $filename);
-            }
-        }
-    } else {
-        // If format is txt, send the onlinetext collected in a filename.
-        send_content_in_file ($text, $filename);
-    }
+    }    
+    return array($filename, $filesforzipping, $text);
+}
+
+/*
+ * This function sends content in a given file
+ * @param string $content
+ * @patam string $filename
+ */
+function send_content_in_file ($content, $filename) {
+    header("Content-Type: application/zip");
+    header("Content-Disposition: attachment; filename=$filename");
+    echo $content;
+    exit;
 }

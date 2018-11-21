@@ -23,7 +23,7 @@ require_once($CFG->dirroot.'/mod/assign/locallib.php');
 require_login();
 // Check if plugin is enabled.
 if (get_config('local_assign', 'disableplugin')) {
-    print_error('disable_sid_plugin', 'local_assign');
+    print_error('disable_assign_plugin', 'local_assign');
 }
 
 $id = optional_param('id', 0, PARAM_INT); // This is de course id.
@@ -38,7 +38,7 @@ require_login($course);
 $context = context_course::instance($course->id, MUST_EXIST);
 $PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
 $pagename = get_string('pluginname', 'local_assign');
-$PAGE->set_url(new moodle_url('/local/sid/', $pageparams));
+$PAGE->set_url(new moodle_url('/local/assign/', $pageparams));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 $PAGE->set_heading($course->fullname);
@@ -70,7 +70,7 @@ $out = '';
 print $OUTPUT->header();
 echo $OUTPUT->box_start();
 $downloadall = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadallzip', $OUTPUT->pix_icon('t/download', ''));
-print $OUTPUT->heading(get_string( 'SID', 'local_assign' ) . $downloadall);
+print $OUTPUT->heading(get_string( 'assigns', 'local_assign' ) . $downloadall);
 
 // Display table header.
 
@@ -84,7 +84,7 @@ foreach ($seminarlist as $key => $seminar) {
 $out .= html_writer:: alist($items);
 
 $table = new html_table();
-$table->attributes['class'] = 'sidtable generaltable';
+$table->attributes['class'] = 'assigntable generaltable';
 $headers = array('N ', get_string('lastname'), get_string('firstname'), get_string( 'section' ));
 $i = 0;
 $nbsubmissions = array();
@@ -155,7 +155,7 @@ foreach ($userlist as $currentuser) {
     $row->cells[] = $cell;
 
     $cell = new html_table_cell();
-    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadzip&userid='.$currentuser['id'],
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadzip&userid='.$currentuser['id'].'&format=zip',
             $OUTPUT->pix_icon('t/download', ''));
     $cell->attributes = array('class' => 'text-sm-center');
     $row->cells[] = $cell;
