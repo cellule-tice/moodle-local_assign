@@ -126,11 +126,11 @@ foreach ($userlist as $currentuser) {
     $seminarinfoforuser = get_seminar_info_for_user($currentuser['id'], $seminarlist);
 
     foreach ($seminarlist as $seminarid => $seminar) {
-        // Foreach assign dispaly in color if the submission was done int ime (green), later (orange), not done (red).
+        // Foreach assign display in color if the submission was done int ime (green), later (orange), not done (red).
         $color = '';
         if (!array_key_exists($seminarid, $seminarinfoforuser)) {
             $color = 'red';
-             $statusseminar = 'notsubmitted';
+            $statusseminar = 'notsubmitted';
         } else if ($seminarinfoforuser[$seminarid][0]['timecreated'] <= $seminar['duedate']) {
             $color = 'green';
             $statusseminar = 'submitted';

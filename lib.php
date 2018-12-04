@@ -62,20 +62,6 @@ function get_assign_id() {
 }
 
 /*
- * This function tells if a module is used into a given course
- * @param string $modulename
- * @param int $courseid
- * @return boolean
- */
-function tool_is_used_in_course($modulename, $courseid) {
-    global $DB;
-    $moduleid = get_module_id ($modulename);
-    $courseinfo = $DB->get_records('course_modules', array('course' => $courseid, 'module' => $moduleid), 'id');
-    return (!empty($courseinfo));
-}
-
-
-/*
  * This function adds the course navigation menu to add a link to this tool.
  */
 function local_assign_extend_navigation_course(navigation_node $parentnode, stdClass $course , context_course $context  ) {
@@ -325,4 +311,4 @@ function send_content_in_file ($content, $filename) {
     header("Content-Disposition: attachment; filename=$filename");
     echo $content;
     exit;
-}
+} 
