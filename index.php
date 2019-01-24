@@ -70,7 +70,7 @@ $out = '';
 print $OUTPUT->header();
 echo $OUTPUT->box_start();
 $downloadall = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadallzip', $OUTPUT->pix_icon('t/download', ''));
-print $OUTPUT->heading(get_string( 'assigns', 'local_assign' ) . $downloadall);
+print $OUTPUT->heading(get_string( 'assigns', 'local_assign' ) . '&nbsp;' . $downloadall);
 
 // Display table header.
 
