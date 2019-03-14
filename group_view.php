@@ -79,26 +79,31 @@ print $OUTPUT->heading(get_string( 'display_group_view', 'local_assign' ));
 
 
 // Get all groups.
-$groups = groups_get_all_groups($course->id);
+$groups = array();
+foreach (groups_get_all_groups($course->id) as $elt) {
+    $groups[$elt->id] = $elt->name;
+}
+natsort($groups);
+
 $groupname = '';
 // Display all groups.
 if ($groups) {
     $out .= '<ul>';
     //natsort($groups);
-    foreach ($groups as $group) {
+    foreach ($groups as $idgroup=>$name) {
         // Il s'agit d'une contrainte qui avait été mise pour les cours d'Arnaud Vervoort mais qui pose pb pour Jean-Yves Matroule
-        //if (substr_count($group->name, 'Groupe')) {
-            $out .= html_writer::start_tag('li', array('class' => 'memberlist', 'id' => $group->id));
-            if ($group->id == $groupid) {
-                $groupname = $group->name;
+        //if (substr_count($name, 'Groupe')) {
+            $out .= html_writer::start_tag('li', array('class' => 'memberlist', 'id' => $idgroup));
+            if ($idgroup == $groupid) {
+                $groupname = $name;
             }
-            $link = '?id='.$id.'&groupid='.$group->id.'#' . $group->id;
-            $out .= html_writer::link($link,  $group->name);
-            $groupmembers = groups_get_members($group->id);
+            $link = '?id='.$id.'&groupid='.$idgroup.'#' . $idgroup;
+            $out .= html_writer::link($link,  $name);
+            $groupmembers = groups_get_members($idgroup);
            
             if (count($groupmembers)) {
                  $files = '<ul>';
-                $out .= html_writer::start_tag('ol', array('class' => 'groupmembers hidden', 'id' => 'groupmembers'.$group->id));
+                $out .= html_writer::start_tag('ol', array('class' => 'groupmembers hidden', 'id' => 'groupmembers'.$idgroup));
                 foreach ($groupmembers as $member) {
                     $link2 = $link .'&userid='.$member->id;
                     $out .= html_writer::tag('li', $member->firstname . ' ' . $member->lastname);
