@@ -20,3 +20,4 @@ $string['modulenameplural'] = 'Add-ons pour les devoirs';
 $string['assigns'] = 'Remise des devoirs';
 $string['seminarlist'] = 'Liste des devoirs';
 $string['nb_assignments'] = 'Nb de devoirs remis :';
+$string['display_group_view'] = 'Montrer la vue par groupe';

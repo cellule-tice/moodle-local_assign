@@ -45,6 +45,12 @@ function assign_is_used_in_course($courseid) {
     return (!empty($courseinfo));
 }
 
+
+function assign_is_in_team($assignid) {
+     global $DB;
+     $info = $DB->get_record_select('assign', "id='$assignid'", null, 'teamsubmission');
+     return $info->teamsubmission;
+}
 /*
  * This function gives the id of a given module
  * @param string $moodulename
@@ -70,6 +76,28 @@ function local_assign_extend_navigation_course(navigation_node $parentnode, stdC
     if (assign_is_used_in_course($course->id)  && has_capability('moodle/course:manageactivities', $context)) {
         $link = new moodle_url($CFG->wwwroot .'/local/assign/index.php', array('id' => $course->id));
         $parentnode->add(get_string('assigns', 'local_assign'), $link, navigation_node::TYPE_SETTING);
+    }
+}
+
+/*
+ * This function is usefull to extend settings navigation
+ */
+function local_assign_extend_settings_navigation($settingsnav, $context) {
+    global $PAGE, $COURSE;
+
+    // Only add this settings item on non-site course pages.
+    if (!$PAGE->course or $PAGE->course->id == 1) {
+        return;
+    }
+    if ($settingnode = $settingsnav->find('modulesettings', navigation_node::TYPE_SETTING)) {
+        if ($PAGE->cm->modname == 'assign') {
+            $assignid = $PAGE->cm->instance;
+            $groupmode = assign_is_in_team($assignid);
+            if ($groupmode) {
+                $url = new moodle_url('/local/assign/group_view.php', array('id' =>$PAGE->cm->id));                
+                $settingnode->add(get_string('display_group_view', 'local_assign'), $url, settings_navigation::TYPE_SETTING);
+            }
+        }
     }
 }
 
@@ -244,10 +272,11 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
             $submission = $assign->get_group_submission($userid, 0, false);
             $submissiongroup = $assign->get_submission_group($userid);
             if ($submissiongroup) {
-                $groupname = $submissiongroup->name . '-';
+                $groupname = $submissiongroup->name . '';
             } else {
-                $groupname = get_string('defaultteam', 'assign') . '-';
+                $groupname = get_string('defaultteam', 'assign');
             }
+            $filename = $groupname . '.zip';
         } else {
             // Submission is individual, no group.
             $submission = $assign->get_user_submission($userid, false);
@@ -257,12 +286,16 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
             $prefix = str_replace('_', ' ', $groupname . get_string('participant', 'assign'));
             $prefix = clean_filename($prefix . '_' . $assign->get_uniqueid_for_user($userid) . '_');
         } else {
-            $prefix = str_replace('_', ' ', $groupname . $student->lastname);
+            if (!$assign->get_instance()->teamsubmission) {
+                 $prefix = str_replace('_', ' ', $groupname . $student->lastname);
+            } else {
+                $prefix = str_replace('_', ' ', $groupname);
+            }
             $prefix = clean_filename($prefix . '_' . $assign->get_uniqueid_for_user($userid) . '_');
         }
         if ($submission) {
             // If there is a submission, contruct the return according to the format (zip/txt).
-            if ($format == '') {
+            if ($format != '.txt') {
                 // If format is zip, then get all the files related to the submissions of this user.
                 foreach ($assign->get_submission_plugins() as $plugin) {
                     if ($plugin->is_enabled() && $plugin->is_visible()) {

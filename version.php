@@ -28,7 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_assign';
-$plugin->version = 2018112004;
+$plugin->version = 2019031402;
 $plugin->release = 'v0.3';
 $plugin->requires = 2014051200;
 $plugin->maturity = MATURITY_ALPHA;

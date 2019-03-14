@@ -20,3 +20,4 @@ $string['assign:view'] = 'Manage assign add-ons';
 $string['assigns'] = 'Assigns status';
 $string['seminarlist'] = 'Assign list';
 $string['nb_assignments'] = 'Nb of completed assignments';
+$string['display_group_view'] = 'Display group view';
