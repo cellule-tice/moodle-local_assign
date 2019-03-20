@@ -105,9 +105,7 @@ foreach ($userlist as $currentuser) {
     $i++;
     $row = new html_table_row();
     $row->cells[] = $i;
-
     $row->cells[] = htmlspecialchars($currentuser['lastname']);
-
     $row->cells[] = htmlspecialchars($currentuser['firstname']);
 
     // Get the progcodes of the user. Must still exist ?

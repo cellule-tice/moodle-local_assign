@@ -56,7 +56,7 @@ $PAGE->requires->js_call_amd('local_assign/assign', 'display_results');
 // The tool is only available after login in course since it is only available to teachers.
 require_capability('moodle/course:manageactivities', $context);
 
-$PAGE->navbar->add($course->shortname, new moodle_url($CFG->wwwroot.'/course/view.php?id='.$id));
+$PAGE->navbar->add($course->shortname, new moodle_url($CFG->wwwroot.'/course/view.php?id='.$course->id));
 $PAGE->navbar->add($assign->get_instance()->name, new moodle_url('/mod/assign/view.php', array('id' => $id)));
 
 $link = new moodle_url($CFG->wwwroot .'/local/assign/group_view.php', $pageparams);
@@ -110,12 +110,14 @@ if ($groups) {
                 }
                 $out .= html_writer::end_tag('ol');
                 $submission = $assign->get_group_submission($member->id, 0, false);
-                $submissiongroup = $assign->get_submission_group($member->id);
-                foreach ($assign->get_submission_plugins() as $plugin) {
-                    if ($plugin->is_enabled() && $plugin->is_visible()) {
-                        $pluginfiles = $plugin->get_files($submission, $member);
-                        foreach ($pluginfiles as $zipfilename => $file) {
-                            $files .= '<li> '   . $file->get_source() . ' - ' . $file->get_author() . '</li>';
+                if ($submission) {
+                    $submissiongroup = $assign->get_submission_group($member->id);
+                    foreach ($assign->get_submission_plugins() as $plugin) {
+                        if ($plugin->is_enabled() && $plugin->is_visible()) {
+                            $pluginfiles = $plugin->get_files($submission, $member);
+                            foreach ($pluginfiles as $zipfilename => $file) {
+                                $files .= '<li> '   . $file->get_source() . ' - ' . $file->get_author() . '</li>';
+                            }
                         }
                     }
                 }
