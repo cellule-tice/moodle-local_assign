@@ -245,7 +245,7 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
     }
 }
 
-function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $format = '', $multi = false) {
+function get_filename_for_export($multi, $course, $user, $format) {
     if (!$multi) {
         // The filename is based on the lastname and firstname of the user.
         $filename = clean_filename($course->shortname) . '_' . clean_filename($user->lastname . '_' .$user->firstname);
@@ -254,14 +254,17 @@ function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $
          $filename = clean_filename($course->shortname);
     }
 
-    $userid = $user->id;
-
     if ($format == '') {
         $filename .= '.zip';
     } else {
         $filename .= '.txt';
     }
+    return $filename;
+}
 
+function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $format = '', $multi = 0) {
+    $filename = get_filename_for_export($multi, $course, $user, $format);
+    $userid = $user->id;
     $i = 0;
     $text = '';
     foreach ($seminarlist as $seminar) {
@@ -350,4 +353,4 @@ function send_content_in_file ($content, $filename) {
     header("Content-Disposition: attachment; filename=$filename");
     echo $content;
     exit;
-} 
+}
