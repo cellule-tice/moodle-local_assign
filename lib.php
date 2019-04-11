@@ -70,11 +70,11 @@ function get_assign_id() {
 /*
  * This function adds the course navigation menu to add a link to this tool.
  */
-function local_assign_extend_navigation_course(navigation_node $parentnode, stdClass $course , context_course $context  ) {
+function local_assignaddons_extend_navigation_course(navigation_node $parentnode, stdClass $course , context_course $context  ) {
      global $CFG;
      // Show only if assign tool is activated.
     if (assign_is_used_in_course($course->id)  && has_capability('moodle/course:manageactivities', $context)) {
-        $link = new moodle_url($CFG->wwwroot .'/local/assign/index.php', array('id' => $course->id));
+        $link = new moodle_url($CFG->wwwroot .'/local/assignaddons/index.php', array('id' => $course->id));
         $parentnode->add(get_string('assigns', 'local_assignaddons'), $link, navigation_node::TYPE_SETTING);
     }
 }
@@ -82,8 +82,8 @@ function local_assign_extend_navigation_course(navigation_node $parentnode, stdC
 /*
  * This function is usefull to extend settings navigation
  */
-function local_assignaddonsaddons_extend_settings_navigation($settingsnav, $context) {
-    global $PAGE, $COURSE;
+function local_assignaddons_extend_settings_navigation($settingsnav, $context) {
+    global $PAGE;
 
     // Only add this settings item on non-site course pages.
     if (!$PAGE->course or $PAGE->course->id == 1) {
@@ -94,7 +94,7 @@ function local_assignaddonsaddons_extend_settings_navigation($settingsnav, $cont
             $assignid = $PAGE->cm->instance;
             $groupmode = assign_is_in_team($assignid);
             if ($groupmode) {
-                $url = new moodle_url('/local/assign/group_view.php', array('id' =>$PAGE->cm->id));                
+                $url = new moodle_url('/local/assignaddons/group_view.php', array('id' =>$PAGE->cm->id));                
                 $settingnode->add(get_string('display_group_view', 'local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
         }
@@ -124,7 +124,7 @@ function get_seminar_list( $courseid ) {
     }
 
     // Get the id correspondign to the assign tool.
-    $moduleid = get_module_id ('assign');
+    $moduleid = get_assign_id ();
 
     foreach ($list as $value) {
         // Foreach assign of the list get the corresponding instance in the course_modules table.
@@ -173,15 +173,15 @@ function clean_html ($content) {
 
 /*
  * Get all documents of a given user for all the assigns of this course
- * @param userid : int
+ * @param user : object
  * @param seminarlist : array
  * @param format : string
  * @return a fiel is proposed to download
  */
-function get_docs_for_student ( $userid , $seminarlist, $format) {
+function get_docs_for_student ( $user , $seminarlist, $format) {
     global $course, $CFG;
     $filesforzipping = array();
-    list($filename, $filesforzipping, $text) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format);
+    list($filename, $filesforzipping, $text) = send_content_for_user($user, $course, $seminarlist, $filesforzipping, $format);
     if ($format != 'text') {
         // If format is zip, from the collected fields generate the zip archive.
         if (count($filesforzipping) != 0) {
@@ -220,16 +220,15 @@ function get_onlinetext_for_submission ($submissionid) {
  * This function gets all documents for a given user and courselist in a specific format
  */
 function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
-     global $course, $CFG;
-     /* @todo : Il faudrait creer un répertoire qui contienne un dossier avec le nom de l'étudiant
-     *  et dans ce dossier toutes les soumissions
-     */
+     global $course, $CFG, $DB;
+     // @todo : A directory shoud be build for each student with its submissions.
 
     $filesforzipping = array();
     foreach ($userlist as $user) {
-        $userid = $user['id'];
+        $userid = $user['userid'];
+        $student = $DB->get_record('user', array('id' => $userid));
         // Get the identity of the user according to its id.
-        list($filename, $filesforzipping) = send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format, true);
+        list($filename, $filesforzipping) = send_content_for_user($student, $course, $seminarlist, $filesforzipping, $format, true);
     }
     // Send the zip file to download.
 
@@ -244,17 +243,22 @@ function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
     }
 }
 
-function send_content_for_user($userid, $course, $seminarlist, $filesforzipping, $format = '', $multi = false) {
-    $student = get_user_identity($userid);
+function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $format = '', $multi = false) {
     if (!$multi) {
         // The filename is based on the lastname and firstname of the user.
-        $filename = clean_filename($course->shortname) . '_' . clean_filename($student->lastname . '_' .$student->firstname);
+        $filename = clean_filename($course->shortname) . '_' . clean_filename($user->lastname . '_' .$user->firstname);
     } else {
         // Filename is the shortname of the course.
          $filename = clean_filename($course->shortname);
     }
 
-    ($format == '') ? $filename .= '.zip' : $filename .= '.txt';
+    $userid = $user->id;
+
+    if ($format == '') {
+        $filename .= '.zip'; 
+    } else {
+        $filename .= '.txt';
+    }
 
     $i = 0;
     $text = '';
@@ -287,7 +291,7 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
             $prefix = clean_filename($prefix . '_' . $assign->get_uniqueid_for_user($userid) . '_');
         } else {
             if (!$assign->get_instance()->teamsubmission) {
-                 $prefix = str_replace('_', ' ', $groupname . $student->lastname);
+                 $prefix = str_replace('_', ' ', $groupname . $user->lastname);
             } else {
                 $prefix = str_replace('_', ' ', $groupname);
             }
@@ -299,7 +303,7 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
                 // If format is zip, then get all the files related to the submissions of this user.
                 foreach ($assign->get_submission_plugins() as $plugin) {
                     if ($plugin->is_enabled() && $plugin->is_visible()) {
-                        $pluginfiles = $plugin->get_files($submission, $student);
+                        $pluginfiles = $plugin->get_files($submission, $user);
                         foreach ($pluginfiles as $zipfilename => $file) {
                             $subtype = $plugin->get_subtype();
                             $type = $plugin->get_type();
@@ -319,7 +323,7 @@ function send_content_for_user($userid, $course, $seminarlist, $filesforzipping,
                 if ( !$mydate ) {
                     $mydate = $seminar['duedate'];
                 }
-                $text .= 'Seminaire '. $i . ' : '. $seminar['name'] . ' du '. utf8_decode(userdate($mydate))
+                $text .= get_string('pluufinname', 'assign') . ' '. $i . ' : '. $seminar['name'] . ' du '. utf8_decode(userdate($mydate))
                         . "\n \n";
                 $content = get_onlinetext_for_submission ($submission->id);
                 if ($content != '') {

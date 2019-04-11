@@ -38,11 +38,11 @@ require_login($course);
 $context = context_course::instance($course->id, MUST_EXIST);
 $PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
 $pagename = get_string('pluginname', 'local_assignaddons');
-$PAGE->set_url(new moodle_url('/local/assign/', $pageparams));
+$PAGE->set_url(new moodle_url('/local/assignaddons/', $pageparams));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 $PAGE->set_heading($course->fullname);
-$PAGE->requires->css('/local/assign/css/assign.css');
+$PAGE->requires->css('/local/assignaddons/css/assign.css');
 
 // The tool is only available after login in course since it is only available to teachers.
 require_capability('moodle/course:manageactivities', $context);
@@ -52,17 +52,28 @@ $seminarlist = get_seminar_list($id);
 
 // Get Student User List.
 
-$userlist = get_student_list_for_course($id);
+$students = array();
+list ($select, $from, $where, $params) = user_get_participants_sql($course->id, 0, 0, 5);
+$list = $DB->get_recordset_sql("$select $from $where", $params);
+foreach ($list as $student) {
+    $key = str_replace('', '_', $student->lastname) . '_' . str_replace('', '_', $student->firstname);
+    if (!array_key_exists($key, $students)) {
+        $students[$key] = array('lastname' => $student->lastname, 'firstname' => $student->firstname,
+            'email' => $student->email, 'userid' => $student->id);
+    }
+}
+ksort($students);
 
 $cmd = optional_param('cmd', '', PARAM_ALPHANUM);
 $format = optional_param('format', '', PARAM_ALPHANUM);
 if ($cmd == 'downloadzip') {
     $userid = optional_param('userid', 0, PARAM_INT);
     $format = ($format == 'text') ? $format : '';
-    get_docs_for_student ( $userid , $seminarlist, $format );
+    $student = $DB->get_record('user', array('id' => $userid));
+    get_docs_for_student ( $student , $seminarlist, $format);
 } else if ($cmd == 'downloadallzip') {
     set_time_limit(0);
-    get_docs_for_all_students ( $userlist , $seminarlist, $format );
+    get_docs_for_all_students ($students , $seminarlist, $format );
 }
 
 // Output.
@@ -79,13 +90,13 @@ $items = array();
 $i = 0;
 foreach ($seminarlist as $key => $seminar) {
     $i++;
-    $items[] = 'S&eacute;m. ' . $i . ' : '.   $seminar['name'];
+    $items[] = get_string('pluginname', 'assign') . ' ' . $i . ' : '.   $seminar['name'];
 }
 $out .= html_writer:: alist($items);
 
 $table = new html_table();
 $table->attributes['class'] = 'assigntable generaltable';
-$headers = array('N ', get_string('lastname'), get_string('firstname'), get_string( 'section' ));
+$headers = array('N ', get_string('lastname'), get_string('firstname'));
 $i = 0;
 $nbsubmissions = array();
 foreach ($seminarlist as $key => $seminar) {
@@ -101,27 +112,15 @@ $table->head = $headers;
 
 $i = 0;
 
-foreach ($userlist as $currentuser) {
+foreach ($students as $currentuser) {
     $i++;
     $row = new html_table_row();
     $row->cells[] = $i;
     $row->cells[] = htmlspecialchars($currentuser['lastname']);
     $row->cells[] = htmlspecialchars($currentuser['firstname']);
 
-    // Get the progcodes of the user. Must still exist ?
-    $progcodes = get_prog_code_for_user($currentuser['id']);
-    if (empty($progcodes)) {
-        $row->cells[] = '-';
-    } else {
-        if (is_array($progcodes)) {
-            $row->cells[] = implode('<br/>', $progcodes);
-        } else {
-            $row->cells[] = '-';
-        }
-    }
-
     // Get semainarsubmissions for a given user.
-    $seminarinfoforuser = get_seminar_info_for_user($currentuser['id'], $seminarlist);
+    $seminarinfoforuser = get_seminar_info_for_user($currentuser['userid'], $seminarlist);
 
     foreach ($seminarlist as $seminarid => $seminar) {
         // Foreach assign display in color if the submission was done int ime (green), later (orange), not done (red).
@@ -147,13 +146,13 @@ foreach ($userlist as $currentuser) {
 
     // Give links for download.
     $cell = new html_table_cell();
-    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id. '&cmd=downloadzip&userid='.$currentuser['id'].'&format=text',
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id. '&cmd=downloadzip&userid='.$currentuser['userid'].'&format=text',
             $OUTPUT->pix_icon('t/download', ''));
     $cell->attributes = array('class' => 'text-sm-center');
     $row->cells[] = $cell;
 
     $cell = new html_table_cell();
-    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadzip&userid='.$currentuser['id'].'&format=zip',
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadzip&userid='.$currentuser['userid'].'&format=zip',
             $OUTPUT->pix_icon('t/download', ''));
     $cell->attributes = array('class' => 'text-sm-center');
     $row->cells[] = $cell;

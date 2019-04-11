@@ -26,13 +26,12 @@ if (get_config('local_assignaddons', 'disableplugin')) {
     print_error('disable_assign_plugin', 'local_assignaddons');
 }
 
-$id = optional_param('id', 0, PARAM_INT);
-
 $groupid = optional_param('groupid', 0, PARAM_INT);
+$id = optional_param('id', 0, PARAM_INT);
 
 list ($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
 
-$pageparams = array('id' => $id, 'assign' => $assign, 'groupid' => $groupid);
+$pageparams = array('id' => $id, 'groupid' => $groupid);
 
 // The tool is only available after login in course since it is only available to teachers.
 require_login($course);
@@ -46,11 +45,11 @@ $assign = new assign($context, $cm, $course);
 $assign->get_instance();
 $assign->set_context($context);
 
-
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
 $PAGE->set_heading($course->fullname);
-$PAGE->requires->css('/local/assign/css/assign.css');
+$PAGE->set_url(new moodle_url('/local/assignaddons/group_viexw.php', $pageparams));
+$PAGE->requires->css('/local/assignaddons/css/assign.css');
 $PAGE->requires->js_call_amd('local_assignaddons/assign', 'display_results');
 
 // The tool is only available after login in course since it is only available to teachers.
@@ -59,17 +58,17 @@ require_capability('moodle/course:manageactivities', $context);
 $PAGE->navbar->add($course->shortname, new moodle_url($CFG->wwwroot.'/course/view.php?id='.$course->id));
 $PAGE->navbar->add($assign->get_instance()->name, new moodle_url('/mod/assign/view.php', array('id' => $id)));
 
-$link = new moodle_url($CFG->wwwroot .'/local/assign/group_view.php', $pageparams);
+$link = new moodle_url($CFG->wwwroot .'/local/assignaddons/group_view.php', $pageparams);
 $PAGE->navbar->add(get_string('display_group_view', 'local_assignaddons'), $link);
 
 if ($groupid) {
     $groupmembers = groups_get_members($groupid);
     $list[$assign->get_instance()->id] = array('cmid' => $id, 'name' => $assign->get_instance()->name,
             'duedate' => $assign->get_instance()->duedate, 'fromdate' => $assign->get_instance()->allowsubmissionsfromdate);
-    foreach ($groupmembers as $member){
+    foreach ($groupmembers as $member) {
         $memberid = $member->id;
     }
-    get_docs_for_student ( $memberid , $list, 'zip');
+    get_docs_for_student ( $member , $list, 'zip');
 }
 // Output.
 $out = '';
@@ -89,48 +88,42 @@ $groupname = '';
 // Display all groups.
 if ($groups) {
     $out .= '<ul>';
-    //natsort($groups);
-    foreach ($groups as $idgroup=>$name) {
-        // Il s'agit d'une contrainte qui avait été mise pour les cours d'Arnaud Vervoort mais qui pose pb pour Jean-Yves Matroule
-        //if (substr_count($name, 'Groupe')) {
-            $out .= html_writer::start_tag('li', array('class' => 'memberlist', 'id' => $idgroup));
-            if ($idgroup == $groupid) {
-                $groupname = $name;
+    foreach ($groups as $idgroup => $name) {
+        $out .= html_writer::start_tag('li', array('class' => 'memberlist', 'id' => $idgroup));
+        if ($idgroup == $groupid) {
+            $groupname = $name;
+        }
+        $link = '?id='.$id.'&groupid='.$idgroup.'#' . $idgroup;
+        $out .= html_writer::link($link,  $name);
+        $groupmembers = groups_get_members($idgroup);
+
+        if (count($groupmembers)) {
+            $files = '<ul>';
+            $out .= html_writer::start_tag('ol', array('class' => 'groupmembers hidden', 'id' => 'groupmembers'.$idgroup));
+            foreach ($groupmembers as $member) {
+                $link2 = $link .'&userid='.$member->id;
+                $out .= html_writer::tag('li', $member->firstname . ' ' . $member->lastname);
             }
-            $link = '?id='.$id.'&groupid='.$idgroup.'#' . $idgroup;
-            $out .= html_writer::link($link,  $name);
-            $groupmembers = groups_get_members($idgroup);
-           
-            if (count($groupmembers)) {
-                 $files = '<ul>';
-                $out .= html_writer::start_tag('ol', array('class' => 'groupmembers hidden', 'id' => 'groupmembers'.$idgroup));
-                foreach ($groupmembers as $member) {
-                    $link2 = $link .'&userid='.$member->id;
-                    $out .= html_writer::tag('li', $member->firstname . ' ' . $member->lastname);
-                }
-                $out .= html_writer::end_tag('ol');
-                $submission = $assign->get_group_submission($member->id, 0, false);
-                if ($submission) {
-                    $submissiongroup = $assign->get_submission_group($member->id);
-                    foreach ($assign->get_submission_plugins() as $plugin) {
-                        if ($plugin->is_enabled() && $plugin->is_visible()) {
-                            $pluginfiles = $plugin->get_files($submission, $member);
-                            foreach ($pluginfiles as $zipfilename => $file) {
-                                $files .= '<li> '   . $file->get_source() . ' - ' . $file->get_author() . '</li>';
-                            }
-                        }
+            $out .= html_writer::end_tag('ol');
+            $submission = $assign->get_group_submission($member->id, 0, false);
+            if ($submission) {
+                $submissiongroup = $assign->get_submission_group($member->id);
+                foreach ($assign->get_submission_plugins() as $plugin) {
+                    if ($plugin->is_enabled() && $plugin->is_visible()) {
+                        $pluginfiles = $plugin->get_files($submission, $member);
+                        foreach ($pluginfiles as $zipfilename => $file) {
+                            $files .= '<li> '   . $file->get_source() . ' - ' . $file->get_author() . '</li>';
+                       }
                     }
                 }
-                $files .= '</ul>';
-                $out .= $files;
-
             }
-            $out .= html_writer::end_tag('li');
-       // }
+            $files .= '</ul>';
+            $out .= $files;
+        }
+        $out .= html_writer::end_tag('li');
     }
     $out .= '</ul>';
 }
-
 
 echo $out;
 
