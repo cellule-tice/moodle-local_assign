@@ -22,8 +22,8 @@ require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 require_login();
 // Check if plugin is enabled.
-if (get_config('local_assign', 'disableplugin')) {
-    print_error('disable_assign_plugin', 'local_assign');
+if (get_config('local_assignaddons', 'disableplugin')) {
+    print_error('disable_assign_plugin', 'local_assignaddons');
 }
 
 $id = optional_param('id', 0, PARAM_INT); // This is de course id.
@@ -37,7 +37,7 @@ require_login($course);
 
 $context = context_course::instance($course->id, MUST_EXIST);
 $PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
-$pagename = get_string('pluginname', 'local_assign');
+$pagename = get_string('pluginname', 'local_assignaddons');
 $PAGE->set_url(new moodle_url('/local/assign/', $pageparams));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('course');
@@ -70,11 +70,11 @@ $out = '';
 print $OUTPUT->header();
 echo $OUTPUT->box_start();
 $downloadall = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id.'&cmd=downloadallzip', $OUTPUT->pix_icon('t/download', ''));
-print $OUTPUT->heading(get_string( 'assigns', 'local_assign' ) . '&nbsp;' . $downloadall);
+print $OUTPUT->heading(get_string( 'assigns', 'local_assignaddons' ) . '&nbsp;' . $downloadall);
 
 // Display table header.
 
-$out .= get_string('seminarlist', 'local_assign');
+$out .= get_string('seminarlist', 'local_assignaddons');
 $items = array();
 $i = 0;
 foreach ($seminarlist as $key => $seminar) {
@@ -166,7 +166,7 @@ foreach ($userlist as $currentuser) {
 $row = new html_table_row();
 $cell = new html_table_cell ();
 $cell->colspan = 4;
-$cell->text = get_string('nb_assignments', 'local_assign');
+$cell->text = get_string('nb_assignments', 'local_assignaddons');
 $row->cells[] = $cell;
 foreach ($nbsubmissions as $nb) {
     $row->cells[] = $nb;

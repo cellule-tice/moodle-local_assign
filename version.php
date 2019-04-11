@@ -20,14 +20,14 @@
  * Setting the $plugin->version to 0 prevents the plugin from being installed.
  * See https://docs.moodle.org/dev/version.php for more info.
  *
- * @package    local_assign
+ * @package    local_assignaddons
  * @copyright  2018 Laurence Dumortier
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_assign';
+$plugin->component = 'local_assignaddons';
 $plugin->version = 2019031402;
 $plugin->release = 'v0.3';
 $plugin->requires = 2014051200;

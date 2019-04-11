@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the local_assign module
+ * Capability definitions for the local_assignaddons module
  *
  * The capabilities are loaded into the database table when the module is
  * installed or updated. Whenever the capability definitions are updated,
@@ -39,7 +39,7 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package    local_assign
+ * @package    local_assignaddons
  * @copyright  2018 Laurence Dumortier Universite dde namur
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // Add instance is only aivalable to editingteacher and manager.
 $capabilities = array(
-    'local/assign:addinstance' => array(
+    'local/assignaddons:addinstance' => array(
         'riskbitmask' => RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
@@ -60,7 +60,7 @@ $capabilities = array(
     ),
 
     // View is only available to teacher, editingteacher and manager.
-    'local/assign:view' => array(
+    'local/assignaddons:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'legacy' => array(

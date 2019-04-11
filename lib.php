@@ -16,7 +16,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function local_assign_supports($feature) {
+function local_assignaddons_supports($feature) {
 
     switch($feature) {
         case FEATURE_MOD_ARCHETYPE:
@@ -75,14 +75,14 @@ function local_assign_extend_navigation_course(navigation_node $parentnode, stdC
      // Show only if assign tool is activated.
     if (assign_is_used_in_course($course->id)  && has_capability('moodle/course:manageactivities', $context)) {
         $link = new moodle_url($CFG->wwwroot .'/local/assign/index.php', array('id' => $course->id));
-        $parentnode->add(get_string('assigns', 'local_assign'), $link, navigation_node::TYPE_SETTING);
+        $parentnode->add(get_string('assigns', 'local_assignaddons'), $link, navigation_node::TYPE_SETTING);
     }
 }
 
 /*
  * This function is usefull to extend settings navigation
  */
-function local_assign_extend_settings_navigation($settingsnav, $context) {
+function local_assignaddonsaddons_extend_settings_navigation($settingsnav, $context) {
     global $PAGE, $COURSE;
 
     // Only add this settings item on non-site course pages.
@@ -95,7 +95,7 @@ function local_assign_extend_settings_navigation($settingsnav, $context) {
             $groupmode = assign_is_in_team($assignid);
             if ($groupmode) {
                 $url = new moodle_url('/local/assign/group_view.php', array('id' =>$PAGE->cm->id));                
-                $settingnode->add(get_string('display_group_view', 'local_assign'), $url, settings_navigation::TYPE_SETTING);
+                $settingnode->add(get_string('display_group_view', 'local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
         }
     }
