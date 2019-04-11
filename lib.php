@@ -80,9 +80,9 @@ function local_assignaddons_extend_navigation_course(navigation_node $parentnode
 }
 
 /*
- * This function is usefull to extend settings navigation
+ * This function is usefull to extend settings navigation in an assignment
  */
-function local_assignaddons_extend_settings_navigation($settingsnav, $context) {
+function local_assignaddons_extend_settings_navigation($settingsnav) {
     global $PAGE;
 
     // Only add this settings item on non-site course pages.
@@ -94,7 +94,7 @@ function local_assignaddons_extend_settings_navigation($settingsnav, $context) {
             $assignid = $PAGE->cm->instance;
             $groupmode = assign_is_in_team($assignid);
             if ($groupmode) {
-                $url = new moodle_url('/local/assignaddons/group_view.php', array('id' =>$PAGE->cm->id));                
+                $url = new moodle_url('/local/assignaddons/group_view.php', array('id' => $PAGE->cm->id));
                 $settingnode->add(get_string('display_group_view', 'local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
         }
@@ -221,7 +221,9 @@ function get_onlinetext_for_submission ($submissionid) {
  */
 function get_docs_for_all_students ( $userlist , $seminarlist, $format = '' ) {
      global $course, $CFG, $DB;
-     // @todo : A directory shoud be build for each student with its submissions.
+     /*
+      *  @todo : A directory shoud be build for each student with its submissions.
+      */
 
     $filesforzipping = array();
     foreach ($userlist as $user) {
@@ -255,7 +257,7 @@ function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $
     $userid = $user->id;
 
     if ($format == '') {
-        $filename .= '.zip'; 
+        $filename .= '.zip';
     } else {
         $filename .= '.txt';
     }
@@ -323,8 +325,8 @@ function send_content_for_user($user, $course, $seminarlist, $filesforzipping, $
                 if ( !$mydate ) {
                     $mydate = $seminar['duedate'];
                 }
-                $text .= get_string('pluufinname', 'assign') . ' '. $i . ' : '. $seminar['name'] . ' du '. utf8_decode(userdate($mydate))
-                        . "\n \n";
+                $text .= get_string('pluufinname', 'assign') . ' '. $i . ' : '. $seminar['name'] . ' du '
+                        . utf8_decode(userdate($mydate)). "\n \n";
                 $content = get_onlinetext_for_submission ($submission->id);
                 if ($content != '') {
                     $text .= clean_html($content) . "\n\n";

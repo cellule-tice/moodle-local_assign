@@ -146,7 +146,8 @@ foreach ($students as $currentuser) {
 
     // Give links for download.
     $cell = new html_table_cell();
-    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id. '&cmd=downloadzip&userid='.$currentuser['userid'].'&format=text',
+    $cell->text = html_writer::link($_SERVER['PHP_SELF'].'?id='.$id. '&cmd=downloadzip&userid='.$currentuser['userid']
+            .'&format=text',
             $OUTPUT->pix_icon('t/download', ''));
     $cell->attributes = array('class' => 'text-sm-center');
     $row->cells[] = $cell;

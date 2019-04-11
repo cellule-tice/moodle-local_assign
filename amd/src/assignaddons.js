@@ -16,7 +16,7 @@ define(['jquery'], function($) {
             $('.display_details').hover(function(){
                 var detailid = this.id.substring(4);
                 var zoneName = '#detail' + detailid;
-                $(zoneName).toogle()
+                $(zoneName).toogle();
             });
         },
     };

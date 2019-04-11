@@ -28,7 +28,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_assignaddons';
-$plugin->version = 2019041102;
+$plugin->version = 2019041103;
 $plugin->release = 'v0.3';
 $plugin->requires = 2014051200;
 $plugin->maturity = MATURITY_ALPHA;

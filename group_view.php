@@ -34,7 +34,7 @@ list ($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
 $pageparams = array('id' => $id, 'groupid' => $groupid);
 
 // The tool is only available after login in course since it is only available to teachers.
-require_login($course);
+require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 $PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
@@ -50,7 +50,7 @@ $PAGE->set_pagelayout('course');
 $PAGE->set_heading($course->fullname);
 $PAGE->set_url(new moodle_url('/local/assignaddons/group_viexw.php', $pageparams));
 $PAGE->requires->css('/local/assignaddons/css/assign.css');
-$PAGE->requires->js_call_amd('local_assignaddons/assign', 'display_results');
+$PAGE->requires->js_call_amd('local_assignaddons/assignaddons', 'display_results');
 
 // The tool is only available after login in course since it is only available to teachers.
 require_capability('moodle/course:manageactivities', $context);
@@ -113,7 +113,7 @@ if ($groups) {
                         $pluginfiles = $plugin->get_files($submission, $member);
                         foreach ($pluginfiles as $zipfilename => $file) {
                             $files .= '<li> '   . $file->get_source() . ' - ' . $file->get_author() . '</li>';
-                       }
+                        }
                     }
                 }
             }
