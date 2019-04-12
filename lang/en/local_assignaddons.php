@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+ /* @package    local_assignaddons
+ * @copyright  2018 Namur University
+ * @autor       Laurence Dumortier <laurence.dumortier@unamur.be>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 $string['pluginname'] = 'Assign add-ons';
 $string['assign:addinstance'] = 'Add instance of assign add-ons plugin';
 $string['assign:view'] = 'Manage assign add-ons';

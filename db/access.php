@@ -40,7 +40,8 @@
  * The variable name for the capability definitions array is $capabilities
  *
  * @package    local_assignaddons
- * @copyright  2018 Laurence Dumortier Universite dde namur
+ * @copyright  2018 Namur University
+ * @autor       Laurence Dumortier <laurence.dumortier@unamur.be>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+ /* @package    local_assignaddons
+ * @copyright  2018 Namur University
+ * @autor       Laurence Dumortier <laurence.dumortier@unamur.be>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
@@ -48,7 +54,7 @@ $PAGE->requires->css('/local/assignaddons/css/assign.css');
 require_capability('moodle/course:manageactivities', $context);
 
 // Get all assigns list for this course.
-$seminarlist = get_seminar_list($id);
+$assignmentslist = get_assignments_list($id);
 
 // Get Student User List.
 
@@ -70,10 +76,10 @@ if ($cmd == 'downloadzip') {
     $userid = optional_param('userid', 0, PARAM_INT);
     $format = ($format == 'text') ? $format : '';
     $student = $DB->get_record('user', array('id' => $userid));
-    get_docs_for_student ( $student , $seminarlist, $format);
+    get_docs_for_student ( $student , $assignmentslist, $format);
 } else if ($cmd == 'downloadallzip') {
     set_time_limit(0);
-    get_docs_for_all_students ($students , $seminarlist, $format );
+    get_docs_for_all_students ($students , $assignmentslist, $format );
 }
 
 // Output.
@@ -88,9 +94,9 @@ print $OUTPUT->heading(get_string( 'assigns', 'local_assignaddons' ) . '&nbsp;' 
 $out .= get_string('seminarlist', 'local_assignaddons');
 $items = array();
 $i = 0;
-foreach ($seminarlist as $key => $seminar) {
+foreach ($assignmentslist as $key => $assignment) {
     $i++;
-    $items[] = get_string('pluginname', 'assign') . ' ' . $i . ' : '.   $seminar['name'];
+    $items[] = get_string('pluginname', 'assign') . ' ' . $i . ' : '.   $assignment['name'];
 }
 $out .= html_writer:: alist($items);
 
@@ -99,7 +105,7 @@ $table->attributes['class'] = 'assigntable generaltable';
 $headers = array('N ', get_string('lastname'), get_string('firstname'));
 $i = 0;
 $nbsubmissions = array();
-foreach ($seminarlist as $key => $seminar) {
+foreach ($assignmentslist as $key => $assignment) {
     $i++;
     $headers[] = 'S&eacute;m. ' . $i;
     $nbsubmissions[$key] = 0;
@@ -120,22 +126,22 @@ foreach ($students as $currentuser) {
     $row->cells[] = htmlspecialchars($currentuser['firstname']);
 
     // Get semainarsubmissions for a given user.
-    $seminarinfoforuser = get_seminar_info_for_user($currentuser['userid'], $seminarlist);
+    $assignmentinfoforuser = get_assignment_info_for_user($currentuser['userid'], $assignmentslist);
 
-    foreach ($seminarlist as $seminarid => $seminar) {
+    foreach ($assignmentslist as $assignid => $assignment) {
         // Foreach assign display in color if the submission was done int ime (green), later (orange), not done (red).
         $color = '';
-        if (!array_key_exists($seminarid, $seminarinfoforuser)) {
+        if (!array_key_exists($assignid, $assignmentinfoforuser)) {
             $color = 'red';
             $statusseminar = 'notsubmitted';
-        } else if ($seminarinfoforuser[$seminarid][0]['timecreated'] <= $seminar['duedate']) {
+        } else if ($assignmentinfoforuser[$assignid][0]['timecreated'] <= $assignment['duedate']) {
             $color = 'green';
             $statusseminar = 'submitted';
-            $nbsubmissions[$seminarid]++;
+            $nbsubmissions[$assignid]++;
         } else {
             $color = 'coral';
             $statusseminar = 'latesubmitted';
-            $nbsubmissions[$seminarid]++;
+            $nbsubmissions[$assignid]++;
         }
         $cell = new html_table_cell();
         $cell->text = '&nbsp;';

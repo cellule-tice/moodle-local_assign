@@ -21,7 +21,8 @@
  * See https://docs.moodle.org/dev/version.php for more info.
  *
  * @package    local_assignaddons
- * @copyright  2018 Laurence Dumortier
+ * @copyright  2018 Namur University
+ * @autor       Laurence Dumortier <laurence.dumortier@unamur.be>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
