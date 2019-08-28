@@ -73,8 +73,19 @@ function local_assignaddons_extend_settings_navigation($settingsnav) {
             $assignid = $PAGE->cm->instance;
             $groupmode = assign_is_in_team($assignid);
             if ($groupmode) {
-                $url = new moodle_url('/local/assignaddons/group_view.php', array('id' => $PAGE->cm->id));
-                $settingnode->add(get_string('display_group_view', 'local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
+                $url = new moodle_url('/local/assignaddons/group_view.php', array('id' =>$PAGE->cm->id));                
+                $settingnode->add(get_string('display_group_view','local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
+            }
+             $list = explode(',', get_config('local_assignaddons', 'courselistwithfillinsubmissionslink'));
+            foreach ($list as $key=>$value) {
+                $list[$key] = trim($value);
+            }
+            $displaylink = in_array($COURSE->shortname, $list);
+            
+            if ($displaylink) {
+                // A link is added to fill in all missing submissions.                
+                $url = new moodle_url('/local/assign/fillin.php', array('cmid' => $PAGE->cm->id));
+                $settingnode->add(get_string('fillinallmissingsubmissions','local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
         }
     }
@@ -161,7 +172,7 @@ function get_assignments_list( $courseid ) {
     return $assignmentlist;
 }
 /*
- * Get the info for a given user azccording to the assignmentlist.
+ * Get the info for a given user according to the assignmentlist.
  * @param int userid
  * @param array assignmentlist
  * @global $DB
@@ -179,6 +190,27 @@ function get_assignment_info_for_user ($userid, $assignmentlist) {
                 $assignmentinfoforuser[$assignmentid][] = array('id' => $info->id, 'timecreated' => $info->timecreated,
                     'timemodified' => $info->timemodified);
             }
+        }
+    }
+    return $assignmentinfoforuser;
+}
+
+/*
+ * Get the info for a given user according to a given assignment
+ * @param int userid
+ * @param array assignmentlist
+ * @global $DB
+ * @return array assignmentinfouser : array
+ */
+function get_assignment_info_for_user_and_assign ($userid, $assignmentid) {
+    global $DB;
+    $assignmentinfoforuser = array();
+    $list = $DB->get_records('assign_submission', array('userid' => $userid,
+        'assignment' => $assignmentid, 'status' => 'submitted'));
+    if (!empty($list)) {
+        foreach ($list as $info) {
+            $assignmentinfoforuser[] = array('id' => $info->id, 'timecreated' => $info->timecreated,
+                'timemodified' => $info->timemodified);
         }
     }
     return $assignmentinfoforuser;

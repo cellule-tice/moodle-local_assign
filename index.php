@@ -26,7 +26,6 @@ require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/mod/assign/locallib.php');
 
 
-require_login();
 // Check if plugin is enabled.
 if (get_config('local_assignaddons', 'disableplugin')) {
     print_error('disable_assign_plugin', 'local_assignaddons');
