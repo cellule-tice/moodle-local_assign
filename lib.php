@@ -62,7 +62,7 @@ function local_assignaddons_extend_navigation_course(navigation_node $parentnode
  * @global $PAGE
  */
 function local_assignaddons_extend_settings_navigation($settingsnav) {
-    global $PAGE;
+    global $PAGE, $COURSE;
 
     // Only add this settings item on non-site course pages.
     if (!$PAGE->course or $PAGE->course->id == 1) {
@@ -76,7 +76,7 @@ function local_assignaddons_extend_settings_navigation($settingsnav) {
                 $url = new moodle_url('/local/assignaddons/group_view.php', array('id' =>$PAGE->cm->id));                
                 $settingnode->add(get_string('display_group_view','local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
-             $list = explode(',', get_config('local_assignaddons', 'courselistwithfillinsubmissionslink'));
+            $list = explode(',', get_config('local_assignaddons', 'courselistwithfillinsubmissionslink'));
             foreach ($list as $key=>$value) {
                 $list[$key] = trim($value);
             }
