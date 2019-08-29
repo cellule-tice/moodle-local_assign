@@ -84,7 +84,7 @@ function local_assignaddons_extend_settings_navigation($settingsnav) {
             
             if ($displaylink) {
                 // A link is added to fill in all missing submissions.                
-                $url = new moodle_url('/local/assign/fillin.php', array('cmid' => $PAGE->cm->id));
+                $url = new moodle_url('/local/assignaddons/fillin.php', array('cmid' => $PAGE->cm->id));
                 $settingnode->add(get_string('fillinallmissingsubmissions','local_assignaddons'), $url, settings_navigation::TYPE_SETTING);
             }
         }

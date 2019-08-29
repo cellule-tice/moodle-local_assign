@@ -26,3 +26,5 @@ $string['assigns'] = 'Remise des devoirs';
 $string['seminarlist'] = 'Liste des devoirs';
 $string['nb_assignments'] = 'Nb de devoirs remis :';
 $string['display_group_view'] = 'Montrer la vue par groupe';
+$string['display_fillinmissingsubmission_link_for_courses'] = 'Liste des cours pours lesques il faut afficher le lien pour remplir les soumissions manquantes';
+$string['fillinallmissingsubmissions'] = 'Remplir automatiquement les soumissions manquantes';

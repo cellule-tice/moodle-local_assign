@@ -27,3 +27,5 @@ $string['assigns'] = 'Assigns status';
 $string['seminarlist'] = 'Assign list';
 $string['nb_assignments'] = 'Nb of completed assignments';
 $string['display_group_view'] = 'Display group view';
+$string['display_fillinmissingsubmission_link_for_courses'] = 'Course list who need the link to fill in missing submissions';
+$string['fillinallmissingsubmissions'] = 'Fill in all missing submissions';
